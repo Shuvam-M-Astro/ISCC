@@ -3,6 +3,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.impute import SimpleImputer
+import time
+
+start_time = time.time()
 
 # Load the dataset (replace 'titanic.csv' with the path to your Titanic dataset file)
 df = pd.read_csv('titanic.csv')
@@ -35,5 +38,9 @@ y_pred = clf.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 report = classification_report(y_test, y_pred)
 
+end_time = time.time()
+
 print(f"Accuracy: {accuracy}")
 print(report)
+
+print("Time taken: {:.2f} seconds".format(end_time - start_time))

@@ -1,8 +1,24 @@
+import time
+import subprocess
 from sklearn.datasets import load_iris
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
-import time
+
+def check_gpu():
+    try:
+        # This command works for NVIDIA GPUs and will throw an error if not available
+        subprocess.check_output(["nvidia-smi", "-L"])
+        return "NVIDIA GPU detected"
+    except subprocess.CalledProcessError as e:
+        return "NVIDIA GPU not detected"
+    except FileNotFoundError as e:
+        return "nvidia-smi not found, cannot detect NVIDIA GPU"
+
+# Print the execution device information
+print(check_gpu())
+
+# Start the timer
 start_time = time.time()
 
 # Load the IRIS dataset
@@ -25,11 +41,8 @@ y_pred = clf.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 report = classification_report(y_test, y_pred)
 
-print(f"Accuracy: {accuracy}")
-print(report)
 end_time = time.time()
 
 print(f"Accuracy: {accuracy}")
 print(report)
-
-print("Time taken: {:.2f} seconds".format(end_time - start_time))
+print(f"Time taken: {end_time - start_time:.2f} seconds")

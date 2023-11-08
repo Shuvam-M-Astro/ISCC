@@ -5,79 +5,98 @@ import torch.nn as nn
 import torch.optim as optim
 import time
 
-# Device configuration - this line will ensure that PyTorch uses the GPU if available
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# Check if GPU is available and set the device accordingly
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(f'Using device: {device}')
 
-# Hyper-parameters
-num_epochs = 5
-batch_size = 4
-learning_rate = 0.001
+# Define a transform to normalize the data
+transform = transforms.Compose(
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-# CIFAR10 dataset (images and labels)
-transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalize the images
-])
+# Download and load the training data
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
 
-train_dataset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                        download=True, transform=transform)
-test_dataset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                       download=True, transform=transform)
+# Download and load the test data
+testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+testloader = torch.utils.data.DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
 
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
-                                          shuffle=True)
-test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
-                                         shuffle=False)
-
-# Define a Convolutional Neural Network
-class ConvNet(nn.Module):
+# Define a simple CNN architecture
+class Net(nn.Module):
     def __init__(self):
-        super(ConvNet, self).__init__()
-        self.layer1 = nn.Conv2d(3, 6, 5)
+        super().__init__()
+        self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
-        self.layer2 = nn.Conv2d(6, 16, 5)
+        self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x):
-        x = self.pool(torch.relu(self.layer1(x)))
-        x = self.pool(torch.relu(self.layer2(x)))
-        x = x.view(-1, 16 * 5 * 5)
+        x = self.pool(torch.relu(self.conv1(x)))
+        x = self.pool(torch.relu(self.conv2(x)))
+        x = torch.flatten(x, 1)  # flatten all dimensions except the batch dimension
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         x = self.fc3(x)
         return x
 
-# Create the CNN
-net = ConvNet().to(device)
+net = Net()
+net.to(device)
 
-# Loss and optimizer
+# Define a Loss function and optimizer
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9)
+optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 # Train the network
 start_time = time.time()
-for epoch in range(num_epochs):
-    for i, (images, labels) in enumerate(train_loader):
-        # Move tensors to the configured device
-        images = images.to(device)
-        labels = labels.to(device)
+for epoch in range(2):  # loop over the dataset multiple times
+    running_loss = 0.0
+    for i, data in enumerate(trainloader, 0):
+        # get the inputs; data is a list of [inputs, labels]
+        inputs, labels = data[0].to(device), data[1].to(device)
 
-        # Forward pass
-        outputs = net(images)
-        loss = criterion(outputs, labels)
-
-        # Backward and optimize
+        # zero the parameter gradients
         optimizer.zero_grad()
+
+        # forward + backward + optimize
+        outputs = net(inputs)
+        loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
 
-        if (i+1) % 2000 == 0:
-            print(f'Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{len(train_loader)}], Loss: {loss.item():.4f}')
+        # print statistics
+        running_loss += loss.item()
+        if i % 2000 == 1999:  # print every 2000 mini-batches
+            print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 2000))
+            running_loss = 0.0
 
 end_time = time.time()
-print(f"Model training time: {end_time - start_time:.2f} seconds")
+print('Finished Training')
+print(f"Training time: {(end_time - start_time):.2f} seconds")
 
-# Save the model checkpoint
-torch.save(net.state_dict(), 'model.ckpt')
+# Save the trained model
+PATH = './cifar_net.pth'
+torch.save(net.state_dict(), PATH)
+
+# Test the network on the test data
+dataiter = iter(testloader)
+images, labels = dataiter.next()
+
+net = Net()
+net.load_state_dict(torch.load(PATH))
+net.to(device)
+
+correct = 0
+total = 0
+# since we're not training, we don't need to calculate the gradients for our outputs
+with torch.no_grad():
+    for data in testloader:
+        images, labels = data[0].to(device), data[1].to(device)
+        outputs = net(images)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+print('Accuracy of the network on the 10000 test images: %d %%' % (100 * correct / total))

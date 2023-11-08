@@ -2,6 +2,8 @@ from sklearn.datasets import load_iris
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
+import time
+start_time = time.time()
 
 # Load the IRIS dataset
 iris = load_iris()
@@ -25,3 +27,9 @@ report = classification_report(y_test, y_pred)
 
 print(f"Accuracy: {accuracy}")
 print(report)
+end_time = time.time()
+
+print(f"Accuracy: {accuracy}")
+print(report)
+
+print("Time taken: {:.2f} seconds".format(end_time - start_time))

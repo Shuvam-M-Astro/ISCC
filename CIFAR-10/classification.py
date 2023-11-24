@@ -5,12 +5,10 @@ import torch.nn as nn
 import torch.optim as optim
 import time
 
-
 print(torch.__version__)
-print(torch.cuda.is_available())
 
-# Check if GPU is available and set the device accordingly
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# Set the device to CPU
+device = torch.device("cpu")
 print(f'Using device: {device}')
 
 # Define a transform to normalize the data

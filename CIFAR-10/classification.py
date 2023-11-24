@@ -12,7 +12,7 @@ print(torch.version.cuda)         # Should display '11.5'
 print(torch.__version__)
 
 # Set the device to CPU
-device = torch.device("cuda")
+device = torch.device("cpu")
 print(f'Using device: {device}')
 
 # Define a transform to normalize the data

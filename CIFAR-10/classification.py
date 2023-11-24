@@ -5,6 +5,10 @@ import torch.nn as nn
 import torch.optim as optim
 import time
 
+
+print(torch.cuda.is_available())  # Should return True if CUDA is set up correctly
+print(torch.version.cuda)         # Should display '11.5'
+
 print(torch.__version__)
 
 # Set the device to CPU

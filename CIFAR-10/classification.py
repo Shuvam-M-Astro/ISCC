@@ -8,7 +8,7 @@ import time
 print(torch.__version__)
 
 # Set the device to CPU
-device = torch.device("cpu")
+device = torch.device("cuda")
 print(f'Using device: {device}')
 
 # Define a transform to normalize the data
@@ -18,11 +18,11 @@ transform = transforms.Compose(
 
 # Download and load the training data
 trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=0)
 
 # Download and load the test data
 testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
+testloader = torch.utils.data.DataLoader(testset, batch_size=4, shuffle=False, num_workers=0)
 
 # Define a simple CNN architecture
 class Net(nn.Module):

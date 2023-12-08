@@ -6,7 +6,7 @@ import torch.optim as optim
 import time
 
 # Decide whether to use multiple cores or a single core
-use_multiple_cores = True  # Set to False to use a single core
+use_multiple_cores = False  # Set to False to use a single core
 
 # Force the use of CPU and set the number of threads
 device = torch.device("cpu")

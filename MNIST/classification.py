@@ -5,9 +5,12 @@ import torch.nn as nn
 import torch.optim as optim
 import time
 
-# Check if GPU is available and set the device accordingly
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# Force the use of CPU
+device = torch.device("cpu")
 print(f'Using device: {device}')
+
+# Print the number of threads being used by PyTorch
+print(f'Number of threads being used: {torch.get_num_threads()}')
 
 # Define a transform to normalize the data
 transform = transforms.Compose(

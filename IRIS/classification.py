@@ -38,7 +38,8 @@ X, y = iris.data, iris.target
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Initialize the classifier with n_jobs=-1 to use all CPU cores
-clf = LogisticRegression(random_state=42, max_iter=200, n_jobs=-1)
+#clf = LogisticRegression(random_state=42, max_iter=200, n_jobs=-1)
+clf = LogisticRegression(random_state=42, max_iter=200, n_jobs=1)
 
 # Check if multiprocessing is enabled
 if clf.n_jobs == -1:

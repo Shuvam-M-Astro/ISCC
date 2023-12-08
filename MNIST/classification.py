@@ -5,12 +5,17 @@ import torch.nn as nn
 import torch.optim as optim
 import time
 
-# Force the use of CPU
-device = torch.device("cpu")
-print(f'Using device: {device}')
+# Decide whether to use multiple cores or a single core
+use_multiple_cores = True  # Set to False to use a single core
 
-# Print the number of threads being used by PyTorch
-print(f'Number of threads being used: {torch.get_num_threads()}')
+# Force the use of CPU and set the number of threads
+device = torch.device("cpu")
+if use_multiple_cores:
+    torch.set_num_threads(torch.get_num_threads())  # Use all available cores
+    print(f'Using device: {device}, with multiple cores')
+else:
+    torch.set_num_threads(1)  # Use only one core
+    print(f'Using device: {device}, with a single core')
 
 # Define a transform to normalize the data
 transform = transforms.Compose(
